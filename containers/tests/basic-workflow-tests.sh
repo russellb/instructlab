@@ -121,6 +121,8 @@ test_chat
 test_taxonomy
 test_generate
 test_train
+
+# TODO: Haven't actually gotten past this point
 test_convert
 
 # Kill the serve process
@@ -133,6 +135,12 @@ test_serve /tmp/somemodelthatispretrained.gguf
 PID=$!
 
 # TODO: chat with the new model
+# TODO: Haven't actually gotten here yet: Serve with the new model
+test_serve /tmp/somemodelthatispretrained.gguf
+PID=$!
+
+# TODO: Haven't actually gotton here yet: chat with the new model
+# TODO: Ask a qestion about softball
 test_chat
 
 # Kill the serve process
