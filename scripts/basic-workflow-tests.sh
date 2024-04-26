@@ -15,6 +15,7 @@ set -euf
 MINIMAL=0
 NUM_INSTRUCTIONS=5
 GENERATE_ARGS=
+TRAIN_ARGS=
 
 export GREP_COLORS='mt=1;33'
 BOLD='\033[1m'
@@ -38,6 +39,7 @@ set_defaults() {
 
     NUM_INSTRUCTIONS=1
     GENERATE_ARGS="--num-cpus $(nproc)"
+    TRAIN_ARGS="--num-epochs 1"
 }
 
 test_smoke() {
@@ -113,7 +115,7 @@ test_train() {
          device='--device=cuda'
     fi
 
-    ilab train $device --gguf-model-path models/granite-7b-lab-Q4_K_M.gguf
+    ilab train $device --gguf-model-path models/granite-7b-lab-Q4_K_M.gguf ${TRAIN_ARGS}
 }
 
 test_convert() {
@@ -159,10 +161,6 @@ test_exec() {
     step Kill ilab serve $PID
     kill $PID
 
-    # Serve with the new model
-    test_serve /tmp/somemodelthatispretrained.gguf
-    PID=$!
-
     # TODO: chat with the new model
     # TODO: Haven't actually gotten here yet: Serve with the new model
     test_serve /tmp/somemodelthatispretrained.gguf
@@ -203,4 +201,5 @@ while getopts "mh" opt; do
     esac
 done
 
+set_defaults
 test_exec
