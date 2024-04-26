@@ -89,7 +89,14 @@ test_generate() {
 
 test_train() {
     task Train the model
-    ilab train --gguf-model-path models/granite-7b-lab-Q4_K_M.gguf
+
+    device=
+    if ls /dev/nvidia* > /dev/null 2> /dev/null; then
+         step With CUDA
+         device='--device=cuda'
+    fi
+
+    ilab train $device --gguf-model-path models/granite-7b-lab-Q4_K_M.gguf
 }
 
 test_convert() {
