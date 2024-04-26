@@ -2,11 +2,19 @@
 set -euf
 # set -x
 
-# This is a basic workflow test of the containers containing the tasks
-# that a typical user would run through to use them and get familiar with ilab
+# This is a basic workflow test of the ilab CLI.
+#
+# We expect it to be run anywhere `ilab` would run, including the instructlab
+# container images.
+#
+# It represents the tasks a typical user would run through to get familiar with ilab.
 #
 # It is written in shell script because this basic workflow *is* a shell
 # workflow, run through step by step at a shell prompt by a user.
+
+MINIMAL=0
+NUM_INSTRUCTIONS=5
+GENERATE_ARGS=
 
 export GREP_COLORS='mt=1;33'
 BOLD='\033[1m'
@@ -23,6 +31,15 @@ task() {
     step $@
 }
 
+set_defaults() {
+    if [ "$MINIMAL" -eq 0 ]; then
+        return
+    fi
+
+    NUM_INSTRUCTIONS=1
+    GENERATE_ARGS="--num-cpus $(nproc)"
+}
+
 test_smoke() {
     task Smoke test InstructLab
     ilab | grep --color 'Usage: ilab'
@@ -30,7 +47,7 @@ test_smoke() {
 
 test_init() {
     task Initializing ilab
-    printf "taxonomy\ny" | ilab init
+    [ -f config.yaml ] || printf "taxonomy\ny" | ilab init
 
     step Checking config.yaml
     cat config.yaml | grep merlinite
@@ -75,7 +92,7 @@ test_taxonomy() {
     mkdir -p taxonomy/knowledge/sports/overview/softball
 
     step Put new qna file into place
-    cp $SCRIPTDIR/basic-workflow-fixture-qna.yaml taxonomy/knowledge/sports/overview/softball/qna.yaml
+    cp $SCRIPTDIR/test-data/basic-workflow-fixture-qna.yaml taxonomy/knowledge/sports/overview/softball/qna.yaml
     head taxonomy/knowledge/sports/overview/softball/qna.yaml | grep --color '1st base'
 
     step Verification
@@ -84,7 +101,7 @@ test_taxonomy() {
 
 test_generate() {
     task Generate synthetic data
-    ilab generate --model ./models/granite-7b-lab-Q4_K_M.gguf --num-instructions 5
+    ilab generate --model ./models/granite-7b-lab-Q4_K_M.gguf --num-instructions ${NUM_INSTRUCTIONS} ${GENERATE_ARGS}
 }
 
 test_train() {
@@ -104,55 +121,84 @@ test_convert() {
     ilab convert
 }
 
-# TODO: Workarounds
+container_workarounds() {
+    # TODO: Workarounds for running this inside the instructlab+cuda container
 
-# TODO: Keep this line until new containers are built that include
-# https://github.com/instructlab/instructlab/pull/988
-test -d taxonomy || git clone https://github.com/instructlab/taxonomy || true
-rm -f config.yaml
+    # TODO: Keep this line until new containers are built that include
+    # https://github.com/instructlab/instructlab/pull/988
+    test -d taxonomy || git clone https://github.com/instructlab/taxonomy || true
+    rm -f config.yaml
 
-# TODO: Keep this until libcudann8 is installed
-# https://github.com/instructlab/instructlab/pull/1018
-dnf install -y libcudnn8
+    # TODO: Keep this until libcudann8 is installed
+    # https://github.com/instructlab/instructlab/pull/1018
+    dnf install -y libcudnn8
+}
 
-# The list of actual tests to run through in workflow order
-test_smoke
-test_init
-test_download
+test_exec() {
+    # The list of actual tests to run through in workflow order
+    test_smoke
+    test_init
+    test_download
 
-# See below for cleanup, this runs an ilab serve in the background
-test_serve
-PID=$!
+    # See below for cleanup, this runs an ilab serve in the background
+    test_serve
+    PID=$!
 
-test_chat
-test_taxonomy
-test_generate
-test_train
+    test_chat
+    test_taxonomy
+    test_generate
+    test_train
 
-# TODO: Haven't actually gotten past this point
-test_convert
+    # TODO: Haven't actually gotten past this point
+    test_convert
 
-# Kill the serve process
-task Stopping the ilab serve
-step Kill ilab serve $PID
-kill $PID
+    # Kill the serve process
+    task Stopping the ilab serve
+    step Kill ilab serve $PID
+    kill $PID
 
-# Serve with the new model
-test_serve /tmp/somemodelthatispretrained.gguf
-PID=$!
+    # Serve with the new model
+    test_serve /tmp/somemodelthatispretrained.gguf
+    PID=$!
 
-# TODO: chat with the new model
-# TODO: Haven't actually gotten here yet: Serve with the new model
-test_serve /tmp/somemodelthatispretrained.gguf
-PID=$!
+    # TODO: chat with the new model
+    # TODO: Haven't actually gotten here yet: Serve with the new model
+    test_serve /tmp/somemodelthatispretrained.gguf
+    PID=$!
 
-# TODO: Haven't actually gotton here yet: chat with the new model
-# TODO: Ask a qestion about softball
-test_chat
+    # TODO: Haven't actually gotton here yet: chat with the new model
+    # TODO: Ask a qestion about softball
+    test_chat
 
-# Kill the serve process
-task Stopping the ilab serve
-step Kill ilab serve $PID
-kill $PID
+    # Kill the serve process
+    task Stopping the ilab serve
+    step Kill ilab serve $PID
+    kill $PID
+}
 
+usage() {
+    echo "Usage: $0 [-m] [-h]"
+    echo "  -m  Run minimal configuration (run quicker when you have no GPU)"
+    echo "  -h  Show this help text"
 
+}
+
+# Process command line arguments
+while getopts "mh" opt; do
+    case $opt in
+        m)
+            MINIMAL=1
+            ;;
+        h)
+            usage
+            exit 0
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" >&2
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+test_exec
