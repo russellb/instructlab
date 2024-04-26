@@ -150,7 +150,9 @@ test_exec() {
     test_train
 
     # TODO: Haven't actually gotten past this point
-    test_convert
+    # When you run this --
+    #   `ilab convert` is only implemented for macOS with M-series chips for now
+    #test_convert
 
     # Kill the serve process
     task Stopping the ilab serve
