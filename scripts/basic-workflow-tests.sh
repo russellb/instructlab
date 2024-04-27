@@ -16,6 +16,7 @@ MINIMAL=0
 NUM_INSTRUCTIONS=5
 GENERATE_ARGS=
 TRAIN_ARGS=
+CI=0
 
 export GREP_COLORS='mt=1;33'
 BOLD='\033[1m'
@@ -152,6 +153,10 @@ test_exec() {
     test_train
 
     # TODO: Haven't actually gotten past this point
+    if [ "$CI" -eq 1 ]; then
+        return
+    fi
+
     # When you run this --
     #   `ilab convert` is only implemented for macOS with M-series chips for now
     #test_convert
@@ -179,15 +184,22 @@ test_exec() {
 usage() {
     echo "Usage: $0 [-m] [-h]"
     echo "  -m  Run minimal configuration (run quicker when you have no GPU)"
+    echo "  -c  Run in CI mode (explicitly skip steps we know will fail in linux CI)"
     echo "  -h  Show this help text"
 
 }
 
 # Process command line arguments
-while getopts "mh" opt; do
+task "Configuring ..."
+while getopts "cmh" opt; do
     case $opt in
+        c)
+            CI=1
+            step "Running in CI mode."
+            ;;
         m)
             MINIMAL=1
+            step "Running minimal configuration."
             ;;
         h)
             usage
