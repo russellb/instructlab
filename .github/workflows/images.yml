@@ -1,6 +1,9 @@
-name: Publish stable container image
+name: Publish container image
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -28,7 +31,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ghcr.io/${{ github.repository }}/instructlab-cuda:stable
+            ghcr.io/${{ github.repository }}/instructlab-cuda
 
       - name: Build and push instructlab-cuda image
         uses: docker/build-push-action@v5
@@ -36,7 +39,7 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           build-args: |
-            GIT_TAG=stable
+            GIT_TAG=main
           push: true
           tags: ${{ steps.instructlab_cuda_meta.outputs.tags }}
           labels: ${{ steps.instructlab_cuda_meta.outputs.labels }}
