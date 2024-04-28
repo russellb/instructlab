@@ -1,6 +1,11 @@
 name: Publish stable container image
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'containers/cuda/Containerfile'
   workflow_dispatch:
 
 jobs:
