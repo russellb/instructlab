@@ -1,0 +1,43 @@
+name: Publish container image
+
+on:
+  workflow_dispatch:
+
+jobs:
+  push_to_registries_instructlab_cuda:
+    name: Push instructlab-cuda container image to GHCR
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Extract metadata (tags, labels) for cuda image
+        id: instructlab_cuda_meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}/instructlab-cuda:stable
+
+      - name: Build and push instructlab-cuda image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.instructlab_cuda_meta.outputs.tags }}
+          labels: ${{ steps.instructlab_cuda_meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          file: containers/cuda/Containerfile
