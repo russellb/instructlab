@@ -26,7 +26,10 @@ from ..config import DEFAULT_MULTIPROCESSING_START_METHOD
 # import intel_extension_for_pytorch as ipex
 
 # 'fork' incompatible with some hardware accelerators
-torch.multiprocessing.set_start_method(DEFAULT_MULTIPROCESSING_START_METHOD)
+try:
+    torch.multiprocessing.set_start_method(DEFAULT_MULTIPROCESSING_START_METHOD)
+except RuntimeError:
+    pass
 
 
 class StoppingCriteriaSub(StoppingCriteria):
