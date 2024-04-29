@@ -89,7 +89,8 @@ test_chat() {
 
 test_taxonomy() {
     task Update the taxonomy
-    ls -al | grep --color 'taxonomy'
+
+    test -d taxonomy || git clone https://github.com/instructlab/taxonomy || true
 
     step Make new taxonomy
     mkdir -p taxonomy/knowledge/sports/overview/softball
