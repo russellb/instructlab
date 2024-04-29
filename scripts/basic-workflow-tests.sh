@@ -151,19 +151,6 @@ test_convert() {
     ilab convert
 }
 
-container_workarounds() {
-    # TODO: Workarounds for running this inside the instructlab+cuda container
-
-    # TODO: Keep this line until new containers are built that include
-    # https://github.com/instructlab/instructlab/pull/988
-    test -d taxonomy || git clone https://github.com/instructlab/taxonomy || true
-    rm -f config.yaml
-
-    # TODO: Keep this until libcudann8 is installed
-    # https://github.com/instructlab/instructlab/pull/1018
-    dnf install -y libcudnn8
-}
-
 test_exec() {
     # The list of actual tests to run through in workflow order
     test_smoke
@@ -194,7 +181,6 @@ test_exec() {
     kill $PID
 
     # TODO: chat with the new model
-    # TODO: Haven't actually gotten here yet: Serve with the new model
     test_serve /tmp/somemodelthatispretrained.gguf
     PID=$!
 
