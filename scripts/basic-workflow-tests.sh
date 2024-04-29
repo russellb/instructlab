@@ -17,6 +17,7 @@ NUM_INSTRUCTIONS=5
 GENERATE_ARGS=
 TRAIN_ARGS=
 CI=0
+GRANITE=0
 
 export GREP_COLORS='mt=1;33'
 BOLD='\033[1m'
@@ -59,15 +60,29 @@ test_init() {
 test_download() {
     task Download the model
 
-    ilab download --repository instructlab/granite-7b-lab-GGUF --filename granite-7b-lab-Q4_K_M.gguf
+    if [ "$GRANITE" -eq 1 ]; then
+        step Downloading the granite model
+        ilab download --repository instructlab/granite-7b-lab-GGUF --filename granite-7b-lab-Q4_K_M.gguf
+    else
+        step Downloading the default model
+        ilab download
+    fi
 }
 
 test_serve() {
     # Accepts an argument of the model, or default here
-    model="${1:-./models/granite-7b-lab-Q4_K_M.gguf}"
+    if [ "$GRANITE" -eq 1 ]; then
+        model="${1:-./models/granite-7b-lab-Q4_K_M.gguf}"
+    else
+        model="${1:-}"
+    fi
+    SERVE_ARGS=""
+    if [ -n "$model" ]; then
+        SERVE_ARGS="--model-path ${model}"
+    fi
 
     task Serve the model
-    ilab serve --model-path $model &
+    ilab serve ${SERVE_ARGS} &
 
     ret=1
     for i in $(seq 1 10); do
@@ -84,7 +99,11 @@ test_serve() {
 
 test_chat() {
     task Chat with the model
-    printf 'Say "Hello"\n' | ilab chat  -m models/granite-7b-lab-Q4_K_M.gguf | grep --color 'Hello'
+    CHAT_ARGS=""
+    if [ "$GRANITE" -eq 1 ]; then
+        CHAT_ARGS="-m models/granite-7b-lab-Q4_K_M.gguf"
+    fi
+    printf 'Say "Hello"\n' | ilab chat ${CHAT_ARGS} | grep --color 'Hello'
 }
 
 test_taxonomy() {
@@ -105,7 +124,10 @@ test_taxonomy() {
 
 test_generate() {
     task Generate synthetic data
-    ilab generate --model ./models/granite-7b-lab-Q4_K_M.gguf --num-instructions ${NUM_INSTRUCTIONS} ${GENERATE_ARGS}
+    if [ "$GRANITE" -eq 1 ]; then
+        GENERATE_ARGS="--model ./models/granite-7b-lab-Q4_K_M.gguf ${GENERATE_ARGS}"
+    fi
+    ilab generate --num-instructions ${NUM_INSTRUCTIONS} ${GENERATE_ARGS}
 }
 
 test_train() {
@@ -117,7 +139,11 @@ test_train() {
          device='--device=cuda'
     fi
 
-    ilab train $device --gguf-model-path models/granite-7b-lab-Q4_K_M.gguf ${TRAIN_ARGS}
+    if [ "$GRANITE" -eq 1 ]; then
+        TRAIN_ARGS="--gguf-model-path models/granite-7b-lab-Q4_K_M.gguf ${TRAIN_ARGS}"
+    fi
+
+    ilab train $device ${TRAIN_ARGS}
 }
 
 test_convert() {
@@ -186,13 +212,14 @@ usage() {
     echo "Usage: $0 [-m] [-h]"
     echo "  -m  Run minimal configuration (run quicker when you have no GPU)"
     echo "  -c  Run in CI mode (explicitly skip steps we know will fail in linux CI)"
+    echo "  -g  Use the granite model"
     echo "  -h  Show this help text"
 
 }
 
 # Process command line arguments
 task "Configuring ..."
-while getopts "cmh" opt; do
+while getopts "cmgh" opt; do
     case $opt in
         c)
             CI=1
@@ -201,6 +228,10 @@ while getopts "cmh" opt; do
         m)
             MINIMAL=1
             step "Running minimal configuration."
+            ;;
+        g)
+            GRANITE=1
+            step "Running with granite model."
             ;;
         h)
             usage
