@@ -53,6 +53,10 @@ jobs:
           # https://github.com/actions/checkout/issues/249
           fetch-depth: 0
 
+      - name: Init submodules
+        run: |
+          git submodule update --init
+
       - name: Setup Python ${{ matrix.python }}
         uses: actions/setup-python@v5
         with:
