@@ -47,6 +47,9 @@ jobs:
         if: steps.check_pr.outputs.is_pr == 'false'
         run: git checkout ${{ github.event.inputs.pr_or_branch }}
 
+      - name: Find nvcc
+        run: sudo find / | grep nvcc
+
       - name: Install dependencies
         run: |
           CMAKE_ARGS="-DLLAMA_CUBLAS=on" python3 -m pip install -r requirements-dev.txt
