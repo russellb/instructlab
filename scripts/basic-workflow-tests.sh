@@ -133,12 +133,8 @@ test_generate() {
 test_train() {
     task Train the model
 
-    device=
-    ls -l /dev/ || true
-    if ls /dev/nvidia* > /dev/null 2> /dev/null; then
-         step With CUDA
-         device='--device=cuda'
-    fi
+    # TODO Only cuda for now
+    device='--device=cuda'
 
     if [ "$GRANITE" -eq 1 ]; then
         TRAIN_ARGS="--gguf-model-path models/granite-7b-lab-Q4_K_M.gguf ${TRAIN_ARGS}"
