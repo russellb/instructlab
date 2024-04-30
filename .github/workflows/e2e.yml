@@ -56,5 +56,7 @@ jobs:
           python3 -m venv venv
           . venv/bin/activate
           CMAKE_ARGS="-DLLAMA_CUBLAS=on" python3 -m pip install -r requirements.txt --force-reinstall --no-cache-dir llama-cpp-python
+          # needed for --4-bit-quant option to ilab train
+          python3 -m pip install bitsandbytes
           python3 -m pip install .
           ./scripts/basic-workflow-tests.sh -cm
