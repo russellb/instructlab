@@ -20,7 +20,7 @@ jobs:
     steps:
       - name: Setup
         run: |
-          sudo apt-get install -y cuda-toolkit python3 git python3-pip tox cmake build-essential
+          sudo apt-get install -y cuda-toolkit python3 git python3-pip cmake build-essential
           nvidia-smi
           ls -l /dev/nvidia*
 
@@ -53,10 +53,8 @@ jobs:
       - name: Install dependencies
         run: |
           export PATH="/usr/local/cuda-12.4/bin:$PATH"
-          CMAKE_ARGS="-DLLAMA_CUBLAS=on" python3 -m pip install -r requirements-dev.txt
+          CMAKE_ARGS="-DLLAMA_CUBLAS=on" python3 -m pip install -r requirements.txt --force-reinstall --no-cache-dir llama-cpp-python
+          python3 -m pip install .
 
       - name: Run e2e test
-        run: |
-          tox \
-            -x testenv:functional.system_site_packages=True \
-            -e py3-e2e
+        run: ./scripts/basic-workflow-tests.sh
