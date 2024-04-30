@@ -4,24 +4,6 @@ name: E2E test
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - "main"
-    paths:
-      - '**.py'
-      - 'pyproject.toml'
-      - 'requirements*.txt'
-      - 'tox.ini'
-      - 'scripts/*.sh'
-  pull_request:
-    branches:
-      - "main"
-    paths:
-      - '**.py'
-      - 'pyproject.toml'
-      - 'requirements*.txt'
-      - 'tox.ini'
-      - 'scripts/*.sh'
 
 jobs:
   e2e:
@@ -52,10 +34,7 @@ jobs:
         with:
           # https://github.com/actions/checkout/issues/249
           fetch-depth: 0
-
-      - name: Init submodules
-        run: |
-          git submodule update --init
+          submodules: 'true'
 
       - name: Setup Python ${{ matrix.python }}
         uses: actions/setup-python@v5
