@@ -134,6 +134,7 @@ test_train() {
     task Train the model
 
     device=
+    ls -l /dev/ || true
     if ls /dev/nvidia* > /dev/null 2> /dev/null; then
          step With CUDA
          device='--device=cuda'
