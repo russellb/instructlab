@@ -134,13 +134,12 @@ test_train() {
     task Train the model
 
     # TODO Only cuda for now
-    device='--device=cuda'
-
+    TRAIN_ARGS="--device=cuda --4-bit-quant"
     if [ "$GRANITE" -eq 1 ]; then
         TRAIN_ARGS="--gguf-model-path models/granite-7b-lab-Q4_K_M.gguf ${TRAIN_ARGS}"
     fi
 
-    ilab train $device ${TRAIN_ARGS}
+    ilab train ${TRAIN_ARGS}
 }
 
 test_convert() {
