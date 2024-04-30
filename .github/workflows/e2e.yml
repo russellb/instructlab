@@ -52,9 +52,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          export PATH="/usr/local/cuda-12.4/bin:$PATH"
+          export PATH="/home/runner/.local/bin:/usr/local/cuda-12.4/bin:$PATH"
           CMAKE_ARGS="-DLLAMA_CUBLAS=on" python3 -m pip install -r requirements.txt --force-reinstall --no-cache-dir llama-cpp-python
           python3 -m pip install .
-
-      - name: Run e2e test
-        run: ./scripts/basic-workflow-tests.sh
+          ./scripts/basic-workflow-tests.sh
