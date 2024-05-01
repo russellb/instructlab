@@ -3,6 +3,9 @@
 name: E2E test
 
 on:
+  # REMOVE THE PULL REQUEST TRIGGER BEFORE MERGING
+  pull_request:
+    branches: ["main"]
   workflow_dispatch:
     inputs:
       pr_or_branch:
